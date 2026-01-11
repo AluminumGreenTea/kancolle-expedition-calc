@@ -2,30 +2,43 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>⚓ 遠征收益最大化計算機</title>
+    <title>⚓ 艦隊收藏：遠征收益計算機</title>
     <style>
         :root {
             --primary: #2c3e50; --fuel: #27ae60; --ammo: #d4ac0d; --steel: #7f8c8d; --bauxite: #e67e22; 
-            --score: #8e44ad; --bucket: #2980b9; --bg-gray: #f4f7f6;
+            --score: #8e44ad; --bucket: #2980b9; --bg-gray: #f4f7f6; --devmat: #16a085;
         }
-        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--bg-gray); padding: 20px; color: #333; }
-        .container { max-width: 1400px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* 推薦組合區塊 */
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--bg-gray); padding: 20px; color: #333; line-height: 1.4; }
+        .container { max-width: 1400px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        /* 頂部推薦 */
         .recommend-box { 
             background: linear-gradient(135deg, #2c3e50, #4ca1af); 
             color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;
             display: flex; justify-content: space-between; align-items: center; gap: 20px;
+            flex-wrap: wrap;
         }
+
         .rec-title { font-size: 1.3em; font-weight: bold; border-left: 5px solid #f39c12; padding-left: 15px; }
         .rec-cards { display: flex; gap: 10px; flex: 1; margin: 0 20px; }
         .rec-card { background: rgba(255,255,255,0.15); padding: 10px; border-radius: 8px; flex: 1; text-align: center; border: 1px solid rgba(255,255,255,0.3); }
-        .rec-total { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; font-size: 0.9em; min-width: 260px; line-height: 1.6; }
+        .rec-total { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; font-size: 0.9em;  line-height: 1.6; }
 
+        /* 時間滑桿 */
         .time-box { background: #fff; border: 3px solid var(--primary); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
         .time-display { font-size: 1.8em; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
         .main-slider { width: 90%; height: 15px; cursor: pointer; }
 
+        /* 工具列 */
+        .tool-bar { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 2; min-width: 200px; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1.1em; }
+        .btn { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; font-size: 13px; background: #7f8c8d;}  
+        .btn-toggle.active { background: #e74c3c; border: 1px solid #000; }
+        .btn-gs.active { background: #f39c12; border: 1px solid #000; }
+        .btn-mon.active { background: #9b59b6; border: 1px solid #000; }
+
+        /* 權重面板 */
         .control-panel { 
             display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
             gap: 12px; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #dee2e6;
@@ -35,16 +48,15 @@
         .weight-item label { font-size: 0.85em; font-weight: bold; }
         .weight-item input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
 
-        .tool-bar { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-        .search-box { flex: 2; min-width: 200px; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1.1em; }
-        .btn { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; font-size: 13px; }
+        /* 表格樣式 */
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 12px; font-size: 13px; position: sticky; top: 0; cursor: pointer; }
+        td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; font-size: 14px; }
+        tr:hover { background-color: #f1f7ff; }
+        tr.disabled { opacity: 0.3; filter: grayscale(0.8); background: #f9f9f9; }
         
-        .btn-gs { background: #7f8c8d; }
-        .btn-gs.active { background: #f39c12; border: 1px solid #000; }
-        .btn-toggle { background: #7f8c8d; }
-        .btn-toggle.active { background: #e74c3c; border: 1px solid #000; }
-        .btn-mon.active { background: #9b59b6; border: 1px solid #000; }
-
+        /* TAG */
+        .area-tag { font-size: 10px; color: #7f8c8d; display: block; margin-top: 2px; }
         .badge { font-size: 11px; padding: 3px 7px; border-radius: 4px; color: white; margin-right: 3px; display: inline-block; font-weight: bold; }
         .tag-bucket { background: var(--bucket); }
         .tag-fuel { background: var(--fuel); }
@@ -54,71 +66,53 @@
         .tag-monthly { background: #8e44ad; }
         .tag-combat { background: #e74c3c; }
 
-        .res-fuel { color: var(--fuel); font-weight: bold; }
-        .res-ammo { color: var(--ammo); font-weight: bold; }
-        .res-steel { color: var(--steel); font-weight: bold; }
-        .res-bauxite { color: var(--bauxite); font-weight: bold; }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { background: var(--primary); color: white; cursor: pointer; padding: 12px; font-size: 13px; position: sticky; top: 0; }
-        td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; font-size: 14px; }
-        tr:hover { background-color: #f1f7ff; }
-        tr.disabled { opacity: 0.3; background: #ebebeb; filter: grayscale(0.5); }
-        .score-col { background: #fdfaff; font-weight: bold; color: var(--score); border-left: 2px solid #eee; }
+        .res-val { font-weight: bold; }
+        .score-col { background: #fdfaff; font-weight: bold; color: var(--score); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="recommend-box">
-        <div class="rec-title">🏆 最佳效率推薦組合</div>
+        <div class="rec-title">🚀 推薦組合 (時收最高)</div>
         <div class="rec-cards" id="recFleetCards"></div>
-        <div class="rec-total" id="recTotalStats"></div>
+        <div class="rec-cards rec-total" id="recTotalStats"></div>
     </div>
 
     <div class="time-box">
-        <div class="time-display">⏰ 提督回港間隔：<span id="textTime">0 小時 0 分鐘</span></div>
+        <div class="time-display">⏰ 提督間格收獲時間：<span id="textTime">0 小時 0 分鐘</span></div>
         <input type="range" id="intervalSlider" class="main-slider" min="0" max="720" step="5" value="0" oninput="updateTime()">
     </div>
 
     <div class="tool-bar">
-        <input type="text" id="searchBar" class="search-box" placeholder="🔍 搜尋任務內容...">
-        <button class="btn" style="background:#27ae60" onclick="applyPreset('fuel')">⛽ 缺燃</button>
-        <button class="btn" style="background:#d4ac0d" onclick="applyPreset('ammo')">💣 缺彈</button>
+        <input type="text" id="searchBar" class="search-box" placeholder="搜尋編號、名稱、海域或標籤..." oninput="updateUI()">
+        <button class="btn" style="background:#27ae60" onclick="applyPreset('fuel')">⛽ 缺燃料</button>
+        <button class="btn" style="background:#d4ac0d" onclick="applyPreset('ammo')">💣 缺彈藥</button>
+        <button class="btn" style="background:#62676e" onclick="applyPreset('steel')">🏗️ 缺鋼材</button>
+        <button class="btn" style="background:#ffa600" onclick="applyPreset('bauxite')">✈️ 缺鋁土</button>
         <button class="btn" style="background:#2980b9" onclick="applyPreset('bucket')">💧 缺桶</button>
         <button class="btn" style="background:#7f8c8d" onclick="applyPreset('reset')">🔄 重置</button>
-        <button id="btnGS" class="btn btn-gs active" onclick="toggleOption('isGS')">✨ 大成功: ON</button>
-        <button id="btnMon" class="btn btn-toggle" onclick="toggleOption('hideMonthly')">🚫 隱藏月常: OFF</button>
-        <button id="btnLimit" class="btn btn-toggle" onclick="toggleOption('hideOvertime')">⏳ 隱藏不合適: OFF</button>
+        <button id="btnGS" class="btn btn-gs" onclick="toggleOption('isGS')">✨ 大成功: OFF</button>
+        <button id="btnMon" class="btn btn-mon" onclick="toggleOption('hideMonthly')">🚫 隱藏月常: OFF</button>
+        <button id="btnLimit" class="btn btn-toggle" onclick="toggleOption('hideIncompatible')">⏳ 隱藏不合適: OFF</button>
     </div>
 
-    <div class="control-panel">
-        <div class="section-title">⚖️ 收益權重設定</div>
-        <div class="weight-item"><label>⛽ 燃料</label><input type="number" id="w_fuel" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>💣 彈藥</label><input type="number" id="w_ammo" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>🏗️ 鋼材</label><input type="number" id="w_steel" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>✈️ 鋁土</label><input type="number" id="w_bauxite" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>💧 水桶</label><input type="number" id="w_bucket" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>🔨 螺絲</label><input type="number" id="w_screw" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>🔫 火槍</label><input type="number" id="w_torch" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>📦 小箱</label><input type="number" id="w_boxS" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>📦 中箱</label><input type="number" id="w_boxM" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>📦 大箱</label><input type="number" id="w_boxL" value="1.0" oninput="updateUI()"></div>
-        <div class="weight-item"><label>💰 大發%</label><input type="number" id="w_daihatsu" value="1.0" oninput="updateUI()"></div>
+    <div class="" id="weightPanel">
     </div>
 
     <table id="mainTable">
         <thead>
             <tr>
-                <th width="60" onclick="resort('id')">ID</th>
-                <th style="text-align:left">名稱 / 標籤</th>
-                <th width="90" onclick="resort('duration')">時間</th>
-                <th width="85" onclick="resort('yieldFuel')">燃料/hr</th>
-                <th width="85" onclick="resort('yieldAmmo')">彈藥/hr</th>
-                <th width="85" onclick="resort('yieldSteel')">鋼材/hr</th>
-                <th width="85" onclick="resort('yieldBauxite')">鋁土/hr</th>
-                <th width="150">副產物/hr</th>
-                <th width="100" onclick="resort('score')" class="score-col">評分</th>
+                <th width="70" onclick="resort('id')">ID</th>
+                <th style="text-align:left">遠征名稱 / 標籤</th>
+                <th width="80" onclick="resort('duration')">時間</th>
+                <th width="80" onclick="resort('yFuel')">燃料/hr</th>
+                <th width="80" onclick="resort('yAmmo')">彈藥/hr</th>
+                <th width="80" onclick="resort('ySteel')">鋼材/hr</th>
+                <th width="80" onclick="resort('yBaux')">鋁土/hr</th>
+                <th width="140">副產物/hr</th>
+                <th width="90" onclick="resort('score')" class="score-col">綜合評分</th>
             </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -140,91 +134,91 @@ const expeditionDB = [
     {id:"A1", area:"1", name:"兵站強化任務", duration:25, fuel:45, ammo:45, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域"]},
     {id:"A2", area:"1", name:"海峡警備行動", duration:55, fuel:70, ammo:40, steel:0, bauxite:10, bucket:1, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域","水桶"]},
     {id:"A3", area:"1", name:"長時間対潜警戒", duration:135, fuel:120, ammo:0, steel:60, bauxite:60, bucket:1, torch:0, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域"]},
-    {id:"A4", area:"1", name:"南西方面連絡線哨戒※", duration:110, fuel:80, ammo:120, steel:0, bauxite:100, bucket:2, torch:2, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常"]},
-    {id:"A5", area:"1", name:"小笠原沖哨戒線※", duration:180, fuel:0, ammo:300, steel:0, bauxite:100, bucket:3, torch:0, devMat:4, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常"]},
-    {id:"A6", area:"1", name:"小笠原沖戦闘哨戒※", duration:210, fuel:100, ammo:500, steel:100, bauxite:200, bucket:0, torch:0, devMat:5, screw:1, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常","交戰"]},
+    {id:"A4", area:"1", name:"南西方面連絡線哨戒", duration:110, fuel:80, ammo:120, steel:0, bauxite:100, bucket:2, torch:2, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常"]},
+    {id:"A5", area:"1", name:"小笠原沖哨戒線", duration:180, fuel:0, ammo:300, steel:0, bauxite:100, bucket:3, torch:0, devMat:4, screw:0, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常","交戰"]},
+    {id:"A6", area:"1", name:"小笠原沖戦闘哨戒", duration:210, fuel:100, ammo:500, steel:100, bauxite:200, bucket:0, torch:0, devMat:5, screw:1, boxS:0, boxM:0, boxL:0, tags:["第1海域","月常","交戰"]},
 
     // --- 第 2 海域：南西諸島海域 ---
-    {id:"9", area:"1", name:"タンカー護衛任務", duration:240, fuel:350, ammo:0, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","燃料"]},
-    {id:"10", area:"1", name:"強行偵察任務", duration:90, fuel:0, ammo:50, steel:0, bauxite:40, bucket:1, torch:1, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
-    {id:"11", area:"1", name:"ボーキサイト輸送任務", duration:300, fuel:0, ammo:0, steel:0, bauxite:250, bucket:1, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","鋁土"]},
-    {id:"12", area:"1", name:"資源輸送任務", duration:480, fuel:50, ammo:250, steel:200, bauxite:50, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:1, boxL:0, tags:["第2海域"]},
-    {id:"13", area:"1", name:"鼠輸送作戦", duration:240, fuel:240, ammo:300, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","燃料","彈藥"]},
-    {id:"14", area:"1", name:"包囲陸戦隊撤収作戦", duration:360, fuel:0, ammo:280, steel:200, bauxite:30, bucket:1, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
-    {id:"15", area:"1", name:"囮機動部隊支援作戦", duration:720, fuel:0, ammo:0, steel:300, bauxite:400, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:1, tags:["第2海域","鋁土"]},
-    {id:"16", area:"1", name:"艦隊決戦援護作戦", duration:900, fuel:500, ammo:500, steel:200, bauxite:200, bucket:0, torch:2, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
-    {id:"B1", area:"1", name:"南西方面航空偵察作戦", duration:35, fuel:0, ammo:0, steel:20, bauxite:30, bucket:1, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","月常"]},
-    {id:"B2", area:"1", name:"敵泊地強襲反撃作戦※", duration:520, fuel:300, ammo:200, steel:100, bauxite:0, bucket:2, torch:0, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
-    {id:"B3", area:"1", name:"南西諸島離島哨戒作戦※", duration:170, fuel:0, ammo:100, steel:100, bauxite:180, bucket:2, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第2海域","月常"]},
-    {id:"B4", area:"1", name:"南西諸島離島防衛作戦※", duration:450, fuel:0, ammo:0, steel:1200, bauxite:650, bucket:0, torch:0, devMat:4, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰","燃料"]},
-    {id:"B5", area:"1", name:"南西諸島捜索撃滅戦※", duration:390, fuel:500, ammo:500, steel:1000, bauxite:750, bucket:4, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
-    {id:"B6", area:"1", name:"精鋭水雷戦隊夜襲※", duration:350, fuel:600, ammo:1000, steel:600, bauxite:600, bucket:0, torch:0, devMat:5, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
+    {id:"9", area:"2", name:"タンカー護衛任務", duration:240, fuel:350, ammo:0, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","燃料"]},
+    {id:"10", area:"2", name:"強行偵察任務", duration:90, fuel:0, ammo:50, steel:0, bauxite:40, bucket:1, torch:1, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
+    {id:"11", area:"2", name:"ボーキサイト輸送任務", duration:300, fuel:0, ammo:0, steel:0, bauxite:250, bucket:1, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","鋁土"]},
+    {id:"12", area:"2", name:"資源輸送任務", duration:480, fuel:50, ammo:250, steel:200, bauxite:50, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:1, boxL:0, tags:["第2海域"]},
+    {id:"13", area:"2", name:"鼠輸送作戦", duration:240, fuel:240, ammo:300, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域","燃料","彈藥"]},
+    {id:"14", area:"2", name:"包囲陸戦隊撤収作戦", duration:360, fuel:0, ammo:280, steel:200, bauxite:30, bucket:1, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
+    {id:"15", area:"2", name:"囮機動部隊支援作戦", duration:720, fuel:0, ammo:0, steel:300, bauxite:400, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:1, tags:["第2海域"]},
+    {id:"16", area:"2", name:"艦隊決戦援護作戦", duration:900, fuel:500, ammo:500, steel:200, bauxite:200, bucket:0, torch:2, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域"]},
+    {id:"B1", area:"2", name:"南西方面航空偵察作戦", duration:35, fuel:0, ammo:0, steel:20, bauxite:30, bucket:1, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第2海域"]},
+    {id:"B2", area:"2", name:"敵泊地強襲反撃作戦", duration:520, fuel:300, ammo:200, steel:100, bauxite:0, bucket:2, torch:0, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常"]},
+    {id:"B3", area:"2", name:"南西諸島離島哨戒作戦", duration:170, fuel:0, ammo:100, steel:100, bauxite:180, bucket:2, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第2海域","月常"]},
+    {id:"B4", area:"2", name:"南西諸島離島防衛作戦", duration:450, fuel:0, ammo:0, steel:1200, bauxite:650, bucket:0, torch:0, devMat:4, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
+    {id:"B5", area:"2", name:"南西諸島捜索撃滅戦", duration:390, fuel:500, ammo:500, steel:1000, bauxite:750, bucket:4, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
+    {id:"B6", area:"2", name:"精鋭水雷戦隊夜襲", duration:350, fuel:600, ammo:1000, steel:600, bauxite:600, bucket:0, torch:0, devMat:5, screw:1, boxS:0, boxM:0, boxL:0, tags:["第2海域","月常","交戰"]},
 
     // --- 第 3 海域：北方海域 ---
-    {id:"17", area:"1", name:"敵地偵察作戦", duration:45, fuel:70, ammo:90, steel:50, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
-    {id:"18", area:"1", name:"航空機輸送作戦", duration:300, fuel:0, ammo:0, steel:300, bauxite:150, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
-    {id:"19", area:"1", name:"北号作戦", duration:360, fuel:400, ammo:50, steel:50, bauxite:30, bucket:0, torch:0, devMat:1, screw:0, boxS:1, boxM:0, boxL:0, tags:["第3海域","燃料"]},
-    {id:"20", area:"1", name:"潜水艦哨戒任務", duration:120, fuel:0, ammo:0, steel:150, bauxite:0, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:1, boxL:0, tags:["第3海域"]},
-    {id:"21", area:"1", name:"北方鼠輸送作戦", duration:140, fuel:320, ammo:270, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第3海域","燃料","彈藥"]},
-    {id:"22", area:"1", name:"艦隊演習", duration:180, fuel:0, ammo:10, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
-    {id:"23", area:"1", name:"航空戦艦運用演習", duration:240, fuel:0, ammo:50, steel:0, bauxite:130, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第3海域"]},
-    {id:"24", area:"1", name:"北方航路海上護衛", duration:500, fuel:500, ammo:0, steel:0, bauxite:150, bucket:1, torch:0, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域","燃料"]},
+    {id:"17", area:"3", name:"敵地偵察作戦", duration:45, fuel:70, ammo:90, steel:50, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
+    {id:"18", area:"3", name:"航空機輸送作戦", duration:300, fuel:0, ammo:0, steel:300, bauxite:150, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
+    {id:"19", area:"3", name:"北号作戦", duration:360, fuel:400, ammo:50, steel:50, bauxite:30, bucket:0, torch:0, devMat:1, screw:0, boxS:1, boxM:0, boxL:0, tags:["第3海域"]},
+    {id:"20", area:"3", name:"潜水艦哨戒任務", duration:120, fuel:0, ammo:0, steel:150, bauxite:0, bucket:0, torch:0, devMat:1, screw:0, boxS:0, boxM:1, boxL:0, tags:["第3海域"]},
+    {id:"21", area:"3", name:"北方鼠輸送作戦", duration:140, fuel:320, ammo:270, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第3海域","燃料","彈藥"]},
+    {id:"22", area:"3", name:"艦隊演習", duration:180, fuel:0, ammo:10, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域"]},
+    {id:"23", area:"3", name:"航空戦艦運用演習", duration:240, fuel:0, ammo:50, steel:0, bauxite:130, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第3海域"]},
+    {id:"24", area:"3", name:"北方航路海上護衛", duration:500, fuel:500, ammo:0, steel:0, bauxite:150, bucket:1, torch:0, devMat:2, screw:0, boxS:0, boxM:0, boxL:0, tags:["第3海域","燃料"]},
 
     // --- 第 4 海域：西方海域 ---
-    {id:"25", area:"1", name:"通商破壊作戦", duration:2400, fuel:900, ammo:0, steel:500, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第4海域"]},
-    {id:"26", area:"1", name:"敵母港空襲作戦", duration:4800, fuel:0, ammo:0, steel:0, bauxite:900, bucket:3, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
-    {id:"27", area:"1", name:"潜水艦通商破壊作戦", duration:1200, fuel:0, ammo:0, steel:800, bauxite:0, bucket:0, torch:0, devMat:2, screw:0, boxS:2, boxM:0, boxL:0, tags:["第4海域"]},
-    {id:"28", area:"1", name:"西方海域封鎖作戦", duration:1500, fuel:0, ammo:0, steel:900, bauxite:350, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:2, boxL:0, tags:["第4海域"]},
-    {id:"29", area:"1", name:"潜水艦派遣演習", duration:1440, fuel:0, ammo:50, steel:0, bauxite:100, bucket:0, torch:0, devMat:1, screw:0, boxS:1, boxM:0, boxL:0, tags:["第4海域"]},
-    {id:"30", area:"1", name:"潜水艦派遣作戦", duration:2880, fuel:0, ammo:50, steel:0, bauxite:100, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
-    {id:"31", area:"1", name:"海外艦との接触", duration:120, fuel:0, ammo:30, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第4海域"]},
-    {id:"32", area:"1", name:"遠洋練習航海", duration:1440, fuel:50, ammo:50, steel:50, bauxite:50, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
-    {id:"D1", area:"1", name:"西方海域偵察作戦", duration:120, fuel:0, ammo:20, steel:20, bauxite:100, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第4海域"]},
-    {id:"D2", area:"1", name:"西方潜水艦作戦※", duration:600, fuel:0, ammo:0, steel:400, bauxite:800, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域","月常","鋁土"]},
-    {id:"D3", area:"1", name:"欧州方面友軍との接触※", duration:720, fuel:0, ammo:800, steel:500, bauxite:400, bucket:3, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第4海域","月常"]},
+    {id:"25", area:"4", name:"通商破壊作戦", duration:2400, fuel:900, ammo:0, steel:500, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第4海域"]},
+    {id:"26", area:"4", name:"敵母港空襲作戦", duration:4800, fuel:0, ammo:0, steel:0, bauxite:900, bucket:3, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
+    {id:"27", area:"4", name:"潜水艦通商破壊作戦", duration:1200, fuel:0, ammo:0, steel:800, bauxite:0, bucket:0, torch:0, devMat:2, screw:0, boxS:2, boxM:0, boxL:0, tags:["第4海域"]},
+    {id:"28", area:"4", name:"西方海域封鎖作戦", duration:1500, fuel:0, ammo:0, steel:900, bauxite:350, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:2, boxL:0, tags:["第4海域"]},
+    {id:"29", area:"4", name:"潜水艦派遣演習", duration:1440, fuel:0, ammo:50, steel:0, bauxite:100, bucket:0, torch:0, devMat:1, screw:0, boxS:1, boxM:0, boxL:0, tags:["第4海域"]},
+    {id:"30", area:"4", name:"潜水艦派遣作戦", duration:2880, fuel:0, ammo:50, steel:0, bauxite:100, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
+    {id:"31", area:"4", name:"海外艦との接触", duration:120, fuel:0, ammo:30, steel:0, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第4海域"]},
+    {id:"32", area:"4", name:"遠洋練習航海", duration:1440, fuel:50, ammo:50, steel:50, bauxite:50, bucket:0, torch:0, devMat:3, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域"]},
+    {id:"D1", area:"4", name:"西方海域偵察作戦", duration:120, fuel:0, ammo:20, steel:20, bauxite:100, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:0, tags:["第4海域"]},
+    {id:"D2", area:"4", name:"西方潜水艦作戦", duration:600, fuel:0, ammo:0, steel:400, bauxite:800, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第4海域","月常","交戰"]},
+    {id:"D3", area:"4", name:"欧州方面友軍との接触", duration:720, fuel:0, ammo:800, steel:500, bauxite:400, bucket:3, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第4海域","月常","交戰"]},
 
     // --- 第 5 海域：南方海域 ---
-    {id:"35", area:"1", name:"MO作戦", duration:420, fuel:0, ammo:0, steel:240, bauxite:280, bucket:0, torch:0, devMat:1, screw:0, boxS:2, boxM:0, boxL:0, tags:["第5海域","鋁土"]},
-    {id:"36", area:"1", name:"水上機基地建設", duration:540, fuel:480, ammo:0, steel:200, bauxite:200, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:2, boxL:0, tags:["第5海域","燃料"]},
-    {id:"37", area:"1", name:"東京急行", duration:165, fuel:0, ammo:380, steel:270, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第5海域","彈藥","鋼材"]},
-    {id:"38", area:"1", name:"東京急行（弐）", duration:175, fuel:420, ammo:0, steel:200, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第5海域","燃料","鋼材"]},
-    {id:"39", area:"1", name:"遠洋潜水艦作戦", duration:1800, fuel:0, ammo:0, steel:300, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第5海域"]},
-    {id:"40", area:"1", name:"水上機前線輸送", duration:410, fuel:300, ammo:300, steel:0, bauxite:100, bucket:1, torch:0, devMat:0, screw:0, boxS:3, boxM:0, boxL:0, tags:["第5海域"]},
-    {id:"E1", area:"1", name:"ラバウル方面艦隊進出※", duration:450, fuel:0, ammo:600, steel:600, bauxite:1000, bucket:0, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:2, tags:["第5海域","月常"]},
-    {id:"E2", area:"1", name:"強行鼠輸送作戦※", duration:185, fuel:0, ammo:480, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第5海域","月常","水桶"]},
+    {id:"35", area:"5", name:"MO作戦", duration:420, fuel:0, ammo:0, steel:240, bauxite:280, bucket:0, torch:0, devMat:1, screw:0, boxS:2, boxM:0, boxL:0, tags:["第5海域","鋁土"]},
+    {id:"36", area:"5", name:"水上機基地建設", duration:540, fuel:480, ammo:0, steel:200, bauxite:200, bucket:1, torch:0, devMat:0, screw:0, boxS:0, boxM:2, boxL:0, tags:["第5海域","燃料"]},
+    {id:"37", area:"5", name:"東京急行", duration:165, fuel:0, ammo:380, steel:270, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第5海域","彈藥","鋼材"]},
+    {id:"38", area:"5", name:"東京急行（弐）", duration:175, fuel:420, ammo:0, steel:200, bauxite:0, bucket:0, torch:0, devMat:0, screw:0, boxS:1, boxM:0, boxL:0, tags:["第5海域","燃料","鋼材"]},
+    {id:"39", area:"5", name:"遠洋潜水艦作戦", duration:1800, fuel:0, ammo:0, steel:300, bauxite:0, bucket:2, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第5海域"]},
+    {id:"40", area:"5", name:"水上機前線輸送", duration:410, fuel:300, ammo:300, steel:0, bauxite:100, bucket:1, torch:0, devMat:0, screw:0, boxS:3, boxM:0, boxL:0, tags:["第5海域"]},
+    {id:"E1", area:"5", name:"ラバウル方面艦隊進出", duration:450, fuel:0, ammo:600, steel:600, bauxite:1000, bucket:0, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:2, tags:["第5海域","月常","交戰"]},
+    {id:"E2", area:"5", name:"強行鼠輸送作戦", duration:185, fuel:0, ammo:480, steel:0, bauxite:0, bucket:2, torch:0, devMat:0, screw:1, boxS:0, boxM:0, boxL:0, tags:["第5海域","月常","交戰"]},
 
     // --- 第 7 海域：南西海域 ---
-    {id:"41", area:"1", name:"ブルネイ泊地沖哨戒", duration:60, fuel:100, ammo:0, steel:0, bauxite:20, bucket:1, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:0, tags:["第7海域","燃料","彈藥","水桶"]},
-    {id:"42", area:"1", name:"ミ船団護衛(一号船団)※", duration:480, fuel:800, ammo:0, steel:0, bauxite:200, bucket:0, torch:3, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第7海域","月常","燃料"]},
-    {id:"43", area:"1", name:"ミ船団護衛(二号船団)※", duration:720, fuel:2000, ammo:0, steel:0, bauxite:400, bucket:0, torch:0, devMat:4, screw:1, boxS:0, boxM:0, boxL:0, tags:["第7海域","月常","燃料"]},
-    {id:"44", area:"1", name:"航空装備輸送任務※", duration:600, fuel:0, ammo:200, steel:0, bauxite:800, bucket:0, torch:0, devMat:4, screw:0, boxS:0, boxM:0, boxL:2, tags:["第7海域","月常","鋁土"]},
-    {id:"45", area:"1", name:"ボーキサイト船団護衛", duration:200, fuel:40, ammo:0, steel:0, bauxite:220, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第7海域","鋁土"]},
-    {id:"46", area:"1", name:"南西海域戦闘哨戒※", duration:210, fuel:300, ammo:0, steel:150, bauxite:380, bucket:0, torch:0, devMat:3, screw:1, boxS:0, boxM:0, boxL:0, tags:["第7海域","月常","交戰"]}
+    {id:"41", area:"7", name:"ブルネイ泊地沖哨戒", duration:60, fuel:100, ammo:0, steel:0, bauxite:20, bucket:1, torch:0, devMat:1, screw:0, boxS:0, boxM:0, boxL:0, tags:["第7海域"]},
+    {id:"42", area:"7", name:"ミ船団護衛(一号船団)", duration:480, fuel:800, ammo:0, steel:0, bauxite:200, bucket:0, torch:3, devMat:0, screw:0, boxS:0, boxM:0, boxL:1, tags:["第7海域","月常"]},
+    {id:"43", area:"7", name:"ミ船団護衛(二号船団)", duration:720, fuel:2000, ammo:0, steel:0, bauxite:400, bucket:0, torch:0, devMat:4, screw:1, boxS:0, boxM:0, boxL:0, tags:["第7海域","月常","交戰"]},
+    {id:"44", area:"7", name:"航空装備輸送任務", duration:600, fuel:0, ammo:200, steel:0, bauxite:800, bucket:0, torch:0, devMat:4, screw:0, boxS:0, boxM:0, boxL:2, tags:["第7海域","月常"]},
+    {id:"45", area:"7", name:"ボーキサイト船団護衛", duration:200, fuel:40, ammo:0, steel:0, bauxite:220, bucket:0, torch:0, devMat:0, screw:0, boxS:0, boxM:1, boxL:0, tags:["第7海域"]},
+    {id:"46", area:"7", name:"南西海域戦闘哨戒", duration:210, fuel:300, ammo:0, steel:150, bauxite:380, bucket:0, torch:0, devMat:3, screw:1, boxS:0, boxM:0, boxL:0, tags:["第7海域","月常","交戰"]}
 ];
 
-let state = { isGS: true, hideMonthly: false, hideOvertime: false, sortKey: 'score', isAsc: false };
+const weightConfigs = [
+    {id:"w_fuel", label:"⛽ 燃料", val:1.0}, {id:"w_ammo", label:"💣 彈藥", val:1.0},
+    {id:"w_steel", label:"🏗️ 鋼材", val:1.0}, {id:"w_bauxite", label:"✈️ 鋁土", val:1.0},
+    {id:"w_bucket", label:"💧 水桶", val:1.0}, {id:"w_devMat", label:"🛠️ 開發", val:1.0},
+    {id:"w_screw", label:"🔨 螺絲", val:1.0}, {id:"w_torch", label:"🔫 火槍", val:1.0},
+    {id:"w_daihatsu", label:"💰 大發%", val:0}
+];
 
-function toggleOption(key) {
-    state[key] = !state[key];
-    const btnMap = { isGS: 'btnGS', hideMonthly: 'btnMon', hideOvertime: 'btnLimit' };
-    const labels = { isGS: '✨ 大成功', hideMonthly: '🚫 隱藏月常', hideOvertime: '⏳ 隱藏不合適' };
-    document.getElementById(btnMap[key]).innerText = `${labels[key]}: ${state[key]?'ON':'OFF'}`;
-    document.getElementById(btnMap[key]).classList.toggle('active', state[key]);
-    updateUI();
-}
+let state = { isGS: false, hideMonthly: false, hideIncompatible: false, sortKey: 'score', isAsc: false };
 
-function applyPreset(mode) {
-    const fields = ['w_fuel', 'w_ammo', 'w_steel', 'w_bauxite', 'w_bucket', 'w_screw', 'w_torch', 'w_devMat', 'w_boxS', 'w_boxM', 'w_boxL', 'w_daihatsu'];
-    if (mode === 'reset') {
-        const vals = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
-        fields.forEach((id, i) => document.getElementById(id).value = vals[i]);
-    } else {
-        fields.forEach(id => document.getElementById(id).value = 0.1);
-        if (mode === 'fuel') { document.getElementById('w_fuel').value = 3.0; document.getElementById('w_bucket').value = 50; }
-        else if (mode === 'ammo') { document.getElementById('w_ammo').value = 3.0; document.getElementById('w_bucket').value = 50; }
-        else if (mode === 'bucket') { document.getElementById('w_bucket').value = 500; document.getElementById('w_fuel').value = 0.5; }
-        document.getElementById('w_daihatsu').value = 20;
-    }
+// 初始化 UI
+function init() {
+    const panel = document.getElementById('weightPanel');
+    
+    panel.innerHTML = `<div class="section-title">⚖️ 收益權重設定</div> 
+                        <div class="control-panel">
+    ${weightConfigs.map(c => `
+        <div class="weight-item">            
+            <label>${c.label}</label>
+            <input type="number" id="${c.id}" value="${c.val}" oninput="updateUI()">
+        </div>
+    `).join('')
+    }`;
     updateUI();
 }
 
@@ -234,108 +228,147 @@ function updateTime() {
     updateUI();
 }
 
-function updateUI() {
-    const playerInterval = parseInt(document.getElementById('intervalSlider').value);
-    const search = document.getElementById('searchBar').value.toLowerCase().trim();
-    
-    const weights = {
-        fuel: parseFloat(document.getElementById('w_fuel').value)||0,
-        ammo: parseFloat(document.getElementById('w_ammo').value)||0,
-        steel: parseFloat(document.getElementById('w_steel').value)||0,
-        bauxite: parseFloat(document.getElementById('w_bauxite').value)||0,
-        bucket: parseFloat(document.getElementById('w_bucket').value)||0,
-        screw: parseFloat(document.getElementById('w_screw').value)||0,
-        torch: parseFloat(document.getElementById('w_torch').value)||0,
-        boxS: parseFloat(document.getElementById('w_boxS').value)||0,
-        boxM: parseFloat(document.getElementById('w_boxM').value)||0,
-        boxL: parseFloat(document.getElementById('w_boxL').value)||0
-    };
+function toggleOption(key) {
+    state[key] = !state[key];
+    const btnMap = { isGS:'btnGS', hideMonthly:'btnMon', hideIncompatible:'btnLimit' };
+    const labelMap = { isGS:'✨ 大成功', hideMonthly:'🚫 隱藏月常', hideIncompatible:'⏳ 隱藏不合適' };
+    const btn = document.getElementById(btnMap[key]);
+    btn.classList.toggle('active', state[key]);
+    btn.innerText = `${labelMap[key]}: ${state[key]?'ON':'OFF'}`;
+    updateUI();
+}
 
-    const daihatsu = 1 + (parseFloat(document.getElementById('w_daihatsu').value)||0)/100;
+function applyPreset(type) {
+    const fields = ['w_fuel', 'w_ammo', 'w_steel', 'w_bauxite', 'w_bucket', 'w_screw', 'w_torch', 'w_devMat', 'w_boxS', 'w_boxM', 'w_boxL', 'w_daihatsu'];
+    if (type === 'reset') {
+        const vals = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        fields.forEach((id, i) => document.getElementById(id).value = vals[i]);
+    } else {
+    document.getElementById('w_fuel').value = (type === 'fuel' ? 3 : 1.0);
+    document.getElementById('w_ammo').value = (type === 'ammo' ? 3 : 1.0);
+    document.getElementById('w_steel').value = (type === 'steel' ? 3 : 1.0);
+    document.getElementById('w_bauxite').value = (type === 'bauxite' ? 3 : 1.0);
+    document.getElementById('w_bucket').value = (type === 'bucket' ? 500 : 1.0);
+    }
+    
+    updateUI();
+}
+
+function updateUI() {
+    const interval = parseInt(document.getElementById('intervalSlider').value);
+    const search = document.getElementById('searchBar').value.toLowerCase();
+    
+    const w = {};
+    weightConfigs.forEach(c => w[c.id.replace('w_','')] = parseFloat(document.getElementById(c.id).value)||0);
+
+    // 大發動艇加成
+    const daihatsu = 1 + (w.daihatsu / 100);
+
+    // 大成功加成
     const gsMult = state.isGS ? 1.5 : 1.0;
 
+    // 副產物大成功加成(假設獲得機率為 50%)
+    const prob = state.isGS ? 1.0 : 0.5;
+
     let rows = expeditionDB.map(exp => {
-        const effectiveTime = Math.max(exp.duration, playerInterval);
-        const hourlyFactor = 60 / effectiveTime;
+        // 時間稀釋邏輯： 如果你 2 小時才回來一次，即便遠征只要 15 分鐘，產能也會被「稀釋」成 2 小時。
+        const effectiveTime = Math.max(exp.duration, interval);
+        const hFactor = 60 / effectiveTime;
 
-        const yieldFuel = (exp.fuel * gsMult * daihatsu) * hourlyFactor;
-        const yieldAmmo = (exp.ammo * gsMult * daihatsu) * hourlyFactor;
-        const yieldSteel = (exp.steel * gsMult * daihatsu) * hourlyFactor;
-        const yieldBauxite = (exp.bauxite * gsMult * daihatsu) * hourlyFactor;
+        // 資源獲取量 * 大成功加成 * 大發動挺 * 時間間格
+        const yFuel = exp.fuel * gsMult * daihatsu * hFactor;
+        const yAmmo = exp.ammo * gsMult * daihatsu * hFactor;
+        const ySteel = exp.steel * gsMult * daihatsu * hFactor;
+        const yBaux = exp.bauxite * gsMult * daihatsu * hFactor;
         
-        const prob = state.isGS ? 1.0 : 0.5;
-        const yieldBucket = (exp.bucket || 0) * prob * hourlyFactor;
-        const yieldScrew = (exp.screw || 0) * (state.isGS ? 1 : 0) * hourlyFactor;
-        const yieldTorch = (exp.torch || 0) * prob * hourlyFactor;
-        const yieldBoxS = (exp.boxS || 0) * prob * hourlyFactor;
-        const yieldBoxM = (exp.boxM || 0) * prob * hourlyFactor;
-        const yieldBoxL = (exp.boxL || 0) * prob * hourlyFactor;
+        //副產物獲取量 * 副產物大成功加成 * 時間間格
+        const yBucket = (exp.bucket || 0) * prob * hFactor;
+        const yDev = (exp.devMat || 0) * prob * hFactor;
+        const yScrew = (exp.screw || 0) * (state.isGS ? 1 : 0) * hFactor;
+        const yTorch = (exp.torch || 0) * prob * hFactor;
 
-        const score = (yieldFuel * weights.fuel) + (yieldAmmo * weights.ammo) + (yieldSteel * weights.steel) + 
-                      (yieldBauxite * weights.bauxite) + (yieldBucket * weights.bucket) + (yieldScrew * weights.screw) + 
-                      (yieldTorch * weights.torch) + (yieldBoxS * weights.boxS) + (yieldBoxM * weights.boxM) + (yieldBoxL * weights.boxL);
+        const score = (yFuel * w.fuel) + (yAmmo * w.ammo) + (ySteel * w.steel) + (yBaux * w.bauxite) + 
+                      (yBucket * w.bucket) + (yDev * w.devMat) + (yScrew * w.screw) + (yTorch * w.torch);
 
-        // --- ⚡ 變灰與隱藏判定邏輯 ⚡ ---
-        // 1. 是否太短：遠征時間不到間隔的 80% (代表提督會浪費超過 20% 的閒置時間)
-        const isTooShort = (playerInterval > 0) && (exp.duration < playerInterval * 0.8);
-        // 2. 是否太長：遠征時間超過間隔 + 15 分鐘寬限
-        const isTooLong = (playerInterval > 0) && (exp.duration > playerInterval + 120);
-        
-        // 只有在間隔設定大於 0 時才觸發判定
-        const isNotFit = (playerInterval > 0) && (isTooShort || isTooLong);
+        // 效率判定：太長或太短(稀釋超過25%)
+        const isTooLong = (interval > 0 && exp.duration > interval * 1.75);
+        const isTooShort = (interval > 0 && exp.duration < interval * 0.75);
+        const isNotFit = isTooLong || isTooShort;
 
-        return { ...exp, yieldFuel, yieldAmmo, yieldSteel, yieldBauxite, yieldBucket, yieldScrew, yieldTorch, score, isNotFit, isTooLong };
+        return { ...exp, yFuel, yAmmo, ySteel, yBaux, yBucket, yDev, yScrew, yTorch, score, isNotFit, isTooLong };
     }).filter(exp => {
         if (state.hideMonthly && exp.tags.includes("月常")) return false;
-        // 如果開啟「隱藏不合適」，則過濾掉太長或太短的
-        if (state.hideOvertime && exp.isNotFit) return false;
+        if (state.hideIncompatible && exp.isNotFit) return false;
         return (exp.id + exp.name + exp.tags.join(',')).toLowerCase().includes(search);
     });
 
-    // 更新推薦 (推薦區只選亮的項目)
+    // 推薦 Logic
     const recs = [...rows].filter(r => !r.isNotFit).sort((a,b) => b.score - a.score).slice(0, 3);
-    const recCards = document.getElementById('recFleetCards');
-    const recStats = document.getElementById('recTotalStats');
-
+    const recContainer = document.getElementById('recFleetCards');
     if(recs.length > 0) {
-        recCards.innerHTML = recs.map((r, i) => `
+        recContainer.innerHTML = recs.map((r, i) => `
             <div class="rec-card">
-                <div style="font-size:0.75em; color:#f39c12; font-weight:bold;">第 ${i+2} 艦隊</div>
-                <div style="font-size:1.1em; font-weight:bold; margin:2px 0;">${r.id}</div>
-                <div style="font-size:0.8em; opacity:0.9;">${r.name}</div>
+                <div style="font-size:10px; color:#f39c12;">第 ${i+2} 艦隊</div>
+                <div style="font-weight:bold;">${r.id} ${r.name}</div>
             </div>
         `).join('');
-        const sumF = recs.reduce((s, r) => s + r.yieldFuel, 0);
-        const sumA = recs.reduce((s, r) => s + r.yieldAmmo, 0);
-        const sumBkt = recs.reduce((s, r) => s + r.yieldBucket, 0);
-        recStats.innerHTML = `<b>組合時收總計：</b><br>⛽燃：${sumF.toFixed(0)} | 💣彈：${sumA.toFixed(0)}<br>💧桶：${sumBkt.toFixed(1)} / 小時`;
-    } else {
-        recCards.innerHTML = "無匹配組合"; recStats.innerHTML = "";
+        const sumF = recs.reduce((s, r) => s + r.yFuel, 0);
+        const sumA = recs.reduce((s, r) => s + r.yAmmo, 0);
+        const sumS = recs.reduce((s, r) => s + r.ySteel, 0);
+        const sumB = recs.reduce((s, r) => s + r.yBaux, 0);
+        const sumBk = recs.reduce((s, r) => s + r.yBucket, 0);
+        const sumD = recs.reduce((s, r) => s + r.yDev, 0);
+        const sumSc = recs.reduce((s, r) => s + r.yScrew, 0);
+        const sumT = recs.reduce((s, r) => s + r.yTorch, 0);
+
+        document.getElementById('recTotalStats').innerHTML = `<b>預估時收：</b><br>
+        ⛽ 燃料 ${sumF.toFixed(0)} | 💣 彈藥 ${sumA.toFixed(0)}
+        | 🏗️ 鋼材 ${sumS.toFixed(0)} | ✈️ 鋁土 ${sumB.toFixed(0)}
+        | 💧 水桶 ${sumBk.toFixed(0)} | 🔨 螺絲 ${sumSc.toFixed(0)}
+        | 🔫 火槍 ${sumT.toFixed(0)} | 🛠️ 開發 ${sumD.toFixed(0)}
+        | 📦 小箱 ${sumA.toFixed(0)}
+        | 📦 中箱 ${sumA.toFixed(0)} | 📦 大箱 ${sumA.toFixed(0)}
+        <br>🛠️開發 ${(recs.reduce((s,r)=>s+r.yDev,0)).toFixed(1)} / hr`;
     }
 
     rows.sort((a,b) => {
-        if (state.sortKey === 'id') return state.isAsc ? a.id.localeCompare(b.id, undefined, {numeric:true}) : b.id.localeCompare(a.id, undefined, {numeric:true});
-        return state.isAsc ? a[state.sortKey] - b[state.sortKey] : b[state.sortKey] - a[state.sortKey];
+        let valA = a[state.sortKey];
+        let valB = b[state.sortKey];
+        
+        // 針對 ID 進行自然排序 (1 -> 2 -> 10)
+        if (state.sortKey === 'id') {
+            return (state.isAsc ? 1 : -1) * valA.localeCompare(valB, undefined, {numeric: true, sensitivity: 'base'});
+        }
+        // 針對數值進行排序
+        if (valA === valB) {
+            return a.id.localeCompare(b.id, undefined, {numeric: true});
+        }
+        return (state.isAsc ? 1 : -1) * (valA > valB ? 1 : -1);
     });
 
     document.getElementById('tbody').innerHTML = rows.map(exp => `
         <tr class="${exp.isNotFit ? 'disabled' : ''}">
-            <td><b>${exp.id}</b></td>
+            <td><b>${exp.id}</b><span class="area-tag">第 ${exp.area} 海域</span></td>
             <td style="text-align:left">
-                <div style="font-weight:bold; margin-bottom:4px;">${exp.name}</div>
+                <div style="font-weight:bold;">${exp.name}</div>
                 ${exp.tags.map(t => `<span class="badge ${getTagClass(t)}">${t}</span>`).join('')}
             </td>
             <td>${exp.duration}m</td>
-            <td class="res-fuel">${exp.yieldFuel.toFixed(0)}</td>
-            <td class="res-ammo">${exp.yieldAmmo.toFixed(0)}</td>
-            <td class="res-steel">${exp.yieldSteel.toFixed(0)}</td>
-            <td class="res-bauxite">${exp.yieldBauxite.toFixed(0)}</td>
-            <td style="font-size:0.85em; text-align:left;">
-                ${exp.yieldBucket>0?`💧${exp.yieldBucket.toFixed(1)} `:''}${exp.yieldScrew>0?`🔨${exp.yieldScrew.toFixed(1)} `:''}${exp.yieldTorch>0?`🔫${exp.yieldTorch.toFixed(1)} `:''}
+            <td class="res-val" style="color:var(--fuel)">${exp.yFuel.toFixed(0)}</td>
+            <td class="res-val" style="color:var(--ammo)">${exp.yAmmo.toFixed(0)}</td>
+            <td class="res-val" style="color:var(--steel)">${exp.ySteel.toFixed(0)}</td>
+            <td class="res-val" style="color:var(--bauxite)">${exp.yBaux.toFixed(0)}</td>
+            <td style="font-size:12px; text-align:left">
+                ${exp.yBucket>0?`💧${exp.yBucket.toFixed(1)} `:''}${exp.yDev>0?`🛠️${exp.yDev.toFixed(1)} `:''}${exp.yScrew>0?`🔨${exp.yScrew.toFixed(1)} `:''}
             </td>
             <td class="score-col">${exp.score.toFixed(0)}</td>
         </tr>
     `).join('');
+}
+
+function getTagClass(tag) {
+    const map = {"水桶":"tag-bucket", "燃料":"tag-fuel", "彈藥":"tag-ammo", "鋁土":"tag-bauxite", "鋼材":"tag-steel", "月常":"tag-monthly", "交戰":"tag-combat"};
+    return map[tag] || "tag-default";
 }
 
 function resort(k) {
@@ -344,13 +377,7 @@ function resort(k) {
     updateUI();
 }
 
-function getTagClass(tag) {
-    const map = {"水桶":"tag-bucket", "燃料":"tag-fuel", "彈藥":"tag-ammo", "鋁土":"tag-bauxite", "鋼材":"tag-steel", "月常":"tag-monthly", "交戰":"tag-combat"};
-    return map[tag] || "tag-default";
-}
-
-document.getElementById('searchBar').addEventListener('input', updateUI);
-updateUI();
+init();
 </script>
 </body>
 </html>

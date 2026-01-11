@@ -4,11 +4,14 @@ const weightConfigs = [
   { id: "w_fuel", label: "⛽ 燃料", val: 1.0 },
   { id: "w_ammo", label: "💣 彈藥", val: 1.0 },
   { id: "w_steel", label: "🏗️ 鋼材", val: 1.0 },
-  { id: "w_bauxite", label: "✈️ 鋁土", val: 1.0 },
-  { id: "w_bucket", label: "💧 水桶", val: 1.0 },
-  { id: "w_devMat", label: "🛠️ 開發", val: 1.0 },
-  { id: "w_screw", label: "🔨 螺絲", val: 1.0 },
-  { id: "w_torch", label: "🔫 火槍", val: 1.0 },
+  { id: "w_bauxite", label: "✈️ 鋁土", val: 3.0 },
+  { id: "w_bucket", label: "💧 水桶", val: 0.0 },
+  { id: "w_devMat", label: "🛠️ 開發", val: 0.0 },
+  { id: "w_screw", label: "🔨 螺絲", val: 0.0 },
+  { id: "w_torch", label: "🔫 火槍", val: 0.0 },
+  { id: "w_boxS", label: "📦 家具箱 (小)", val: 0.0 },
+  { id: "w_boxM", label: "📦 家具箱 (中)", val: 0.0 },
+  { id: "w_boxL", label: "📦 家具箱 (大)", val: 0.0 },
   { id: "w_daihatsu", label: "💰 大發%", val: 0 },
 ];
 
@@ -20,7 +23,25 @@ let state = {
   isAsc: false,
 };
 
-// 初始化 UI
+const fmt = (v, type = "sub") => {
+  if (!v || v === 0) return "0";
+  if (type === "res") return v.toFixed(0);
+  return (Math.ceil(v * 10) / 10).toFixed(1);
+};
+
+function getTagClass(tag) {
+  const map = {
+    水桶: "tag-bucket",
+    燃料: "tag-fuel",
+    彈藥: "tag-ammo",
+    鋁土: "tag-bauxite",
+    鋼材: "tag-steel",
+    月常: "tag-monthly",
+    交戰: "tag-combat",
+  };
+  return map[tag] || "tag-default";
+}
+
 function init() {
   const panel = document.getElementById("weightPanel");
 
@@ -81,7 +102,7 @@ function applyPreset(type) {
     "w_daihatsu",
   ];
   if (type === "reset") {
-    const vals = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+    const vals = [1.0, 1.0, 1.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
     fields.forEach((id, i) => (document.getElementById(id).value = vals[i]));
   } else {
     document.getElementById("w_fuel").value = type === "fuel" ? 3 : 1.0;
@@ -94,10 +115,12 @@ function applyPreset(type) {
   updateUI();
 }
 
+// UI 渲染邏輯
 function updateUI() {
   const interval = parseInt(document.getElementById("intervalSlider").value);
   const search = document.getElementById("searchBar").value.toLowerCase();
 
+  // 獲取權重
   const w = {};
   weightConfigs.forEach(
     (c) =>
@@ -120,47 +143,47 @@ function updateUI() {
       const effectiveTime = Math.max(exp.duration, interval);
       const hFactor = 60 / effectiveTime;
 
-      // 資源獲取量 * 大成功加成 * 大發動挺 * 時間間格
-      const yFuel = exp.fuel * gsMult * daihatsu * hFactor;
-      const yAmmo = exp.ammo * gsMult * daihatsu * hFactor;
-      const ySteel = exp.steel * gsMult * daihatsu * hFactor;
-      const yBaux = exp.bauxite * gsMult * daihatsu * hFactor;
-
-      //副產物獲取量 * 副產物大成功加成 * 時間間格
-      const yBucket = (exp.bucket || 0) * prob * hFactor;
-      const yDev = (exp.devMat || 0) * prob * hFactor;
-      const yScrew = (exp.screw || 0) * (state.isGS ? 1 : 0) * hFactor;
-      const yTorch = (exp.torch || 0) * prob * hFactor;
-
-      const score =
-        yFuel * w.fuel +
-        yAmmo * w.ammo +
-        ySteel * w.steel +
-        yBaux * w.bauxite +
-        yBucket * w.bucket +
-        yDev * w.devMat +
-        yScrew * w.screw +
-        yTorch * w.torch;
-
-      // 效率判定：太長或太短(稀釋超過25%)
-      const isTooLong = interval > 0 && exp.duration > interval * 1.75;
-      const isTooShort = interval > 0 && exp.duration < interval * 0.75;
-      const isNotFit = isTooLong || isTooShort;
-
-      return {
+      const data = {
         ...exp,
-        yFuel,
-        yAmmo,
-        ySteel,
-        yBaux,
-        yBucket,
-        yDev,
-        yScrew,
-        yTorch,
-        score,
-        isNotFit,
-        isTooLong,
+        // 資源獲取量 * 大成功加成 * 大發動挺 * 時間間格
+        yFuel: exp.fuel * gsMult * daihatsu * hFactor,
+        yAmmo: exp.ammo * gsMult * daihatsu * hFactor,
+        ySteel: exp.steel * gsMult * daihatsu * hFactor,
+        yBaux: exp.bauxite * gsMult * daihatsu * hFactor,
+
+        //副產物獲取量 * 副產物大成功加成 * 時間間格
+        yBucket: (exp.bucket || 0) * prob * hFactor,
+        yDev: (exp.devMat || 0) * prob * hFactor,
+        yScrew: (exp.screw || 0) * (state.isGS ? 1 : 0) * hFactor,
+        yTorch: (exp.torch || 0) * prob * hFactor,
+        yBoxS: (exp.boxS || 0) * prob * hFactor,
+        yBoxM: (exp.boxM || 0) * prob * hFactor,
+        yBoxL: (exp.boxL || 0) * prob * hFactor,
       };
+
+      data.score = [
+        "fuel",
+        "ammo",
+        "steel",
+        "bauxite",
+        "bucket",
+        "devMat",
+        "screw",
+        "torch",
+        "boxS",
+        "boxM",
+        "boxL",
+      ].reduce(
+        (sum, k) =>
+          sum +
+          (data["y" + k.charAt(0).toUpperCase() + k.slice(1)] || 0) * w[k],
+        0
+      );
+
+      data.isNotFit =
+        interval > 0 &&
+        (exp.duration > interval * 1.75 || exp.duration < interval * 0.75);
+      return data;
     })
     .filter((exp) => {
       if (state.hideMonthly && exp.tags.includes("月常")) return false;
@@ -170,44 +193,41 @@ function updateUI() {
         .includes(search);
     });
 
-  // 推薦 Logic
-  const recs = [...rows]
+  const recs = rows
     .filter((r) => !r.isNotFit)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3);
-  const recContainer = document.getElementById("recFleetCards");
-  if (recs.length > 0) {
-    recContainer.innerHTML = recs
-      .map(
-        (r, i) => `
-            <div class="rec-card">
-                <div style="font-size:10px; color:#f39c12;">第 ${
-                  i + 2
-                } 艦隊</div>
-                <div style="font-weight:bold;">${r.id} ${r.name}</div>
-            </div>
-        `
-      )
-      .join("");
-    const sumF = recs.reduce((s, r) => s + r.yFuel, 0);
-    const sumA = recs.reduce((s, r) => s + r.yAmmo, 0);
-    const sumS = recs.reduce((s, r) => s + r.ySteel, 0);
-    const sumB = recs.reduce((s, r) => s + r.yBaux, 0);
-    const sumBk = recs.reduce((s, r) => s + r.yBucket, 0);
-    const sumD = recs.reduce((s, r) => s + r.yDev, 0);
-    const sumSc = recs.reduce((s, r) => s + r.yScrew, 0);
-    const sumT = recs.reduce((s, r) => s + r.yTorch, 0);
+  renderDashboard(recs);
+  renderTable(rows);
+}
 
-    document.getElementById("recTotalStats").innerHTML = `<b>預估時收：</b><br>
-        ⛽ 燃料 ${sumF.toFixed(0)} | 💣 彈藥 ${sumA.toFixed(0)}
-        | 🏗️ 鋼材 ${sumS.toFixed(0)} | ✈️ 鋁土 ${sumB.toFixed(0)}
-        | 💧 水桶 ${sumBk.toFixed(0)} | 🔨 螺絲 ${sumSc.toFixed(0)}
-        | 🔫 火槍 ${sumT.toFixed(0)} | 🛠️ 開發 ${sumD.toFixed(0)}
-        | 📦 小箱 ${sumA.toFixed(0)}
-        | 📦 中箱 ${sumA.toFixed(0)} | 📦 大箱 ${sumA.toFixed(0)}
-        <br>🛠️開發 ${recs.reduce((s, r) => s + r.yDev, 0).toFixed(1)} / hr`;
-  }
+function renderDashboard(recs) {
+  const container = document.getElementById("recFleetCards");
+  const statsEl = document.getElementById("recTotalStats");
+  if (recs.length === 0) return;
 
+  container.innerHTML = recs
+    .map(
+      (r, i) => `
+    <div class="rec-card">
+      <div style="font-size:10px; color:#f39c12;">第 ${i + 2} 艦隊</div>
+      <div style="font-weight:bold;">${r.id} ${r.name}</div>
+    </div>`
+    )
+    .join("");
+
+  const sum = (key) => recs.reduce((s, r) => s + r[key], 0);
+
+  statsEl.innerHTML = `
+    <b>預估總時收：</b><br>
+    ⛽ ${fmt(sum("yFuel"), "res")} | 💣 ${fmt(sum("yAmmo"), "res")} | 
+    🏗️ ${fmt(sum("ySteel"), "res")} | ✈️ ${fmt(sum("yBaux"), "res")} <br>
+    💧 ${fmt(sum("yBucket"))} | 🔨 ${fmt(sum("yScrew"))} | 
+    🔫 ${fmt(sum("yTorch"))} | 🛠️ ${fmt(sum("yDev"))} | 
+    📦 ${fmt(sum("yBoxS") + sum("yBoxM") + sum("yBoxL"))}`;
+}
+
+function renderTable(rows) {
   rows.sort((a, b) => {
     let valA = a[state.sortKey];
     let valB = b[state.sortKey];
@@ -232,54 +252,54 @@ function updateUI() {
   document.getElementById("tbody").innerHTML = rows
     .map(
       (exp) => `
-        <tr class="${exp.isNotFit ? "disabled" : ""}">
-            <td><b>${exp.id}</b><span class="area-tag">第 ${
-        exp.area
-      } 海域</span></td>
-            <td style="text-align:left">
-                <div style="font-weight:bold;">${exp.name}</div>
-                ${exp.tags
-                  .map(
-                    (t) => `<span class="badge ${getTagClass(t)}">${t}</span>`
-                  )
-                  .join("")}
-            </td>
-            <td>${exp.duration}m</td>
-            <td class="res-val" style="color:var(--fuel)">${exp.yFuel.toFixed(
-              0
-            )}</td>
-            <td class="res-val" style="color:var(--ammo)">${exp.yAmmo.toFixed(
-              0
-            )}</td>
-            <td class="res-val" style="color:var(--steel)">${exp.ySteel.toFixed(
-              0
-            )}</td>
-            <td class="res-val" style="color:var(--bauxite)">${exp.yBaux.toFixed(
-              0
-            )}</td>
-            <td style="font-size:12px; text-align:left">
-                ${exp.yBucket > 0 ? `💧${exp.yBucket.toFixed(1)} ` : ""}${
-        exp.yDev > 0 ? `🛠️${exp.yDev.toFixed(1)} ` : ""
-      }${exp.yScrew > 0 ? `🔨${exp.yScrew.toFixed(1)} ` : ""}
-            </td>
-            <td class="score-col">${exp.score.toFixed(0)}</td>
-        </tr>
-    `
+    <tr class="${exp.isNotFit ? "disabled" : ""}">
+      <td><b>${exp.id}</b><br><small>第 ${exp.area} 海域</small></td>
+      <td style="text-align:left">
+        <b>${exp.name}</b><br>
+        ${exp.tags
+          .map((t) => `<span class="badge ${getTagClass(t)}">${t}</span>`)
+          .join("")}
+      </td>
+      <td>${exp.duration}m</td>
+      <td style="color:var(--fuel)">${fmt(exp.yFuel, "res")}</td>
+      <td style="color:var(--ammo)">${fmt(exp.yAmmo, "res")}</td>
+      <td style="color:var(--steel)">${fmt(exp.ySteel, "res")}</td>
+      <td style="color:var(--bauxite)">${fmt(exp.yBaux, "res")}</td>
+      <td style="font-size:12px; text-align:left">${renderExtraRewards(
+        exp
+      )}</td>
+      <td class="score-col">${exp.score.toFixed(0)}</td>
+    </tr>`
     )
     .join("");
 }
 
-function getTagClass(tag) {
-  const map = {
-    水桶: "tag-bucket",
-    燃料: "tag-fuel",
-    彈藥: "tag-ammo",
-    鋁土: "tag-bauxite",
-    鋼材: "tag-steel",
-    月常: "tag-monthly",
-    交戰: "tag-combat",
-  };
-  return map[tag] || "tag-default";
+/**
+ * 專門處理副產物顯示
+ * @param {Object} exp
+ * @returns {string}
+ */
+function renderExtraRewards(exp) {
+  const rewards = [
+    { val: exp.yBucket, icon: "💧" },
+    { val: exp.yDev, icon: "🛠️" },
+    { val: exp.yScrew, icon: "🔨" },
+    { val: exp.yTorch, icon: "🔫" },
+    { val: exp.yBoxS, icon: "📦(小)" },
+    { val: exp.yBoxM, icon: "📦(中)" },
+    { val: exp.yBoxL, icon: "📦(大)" },
+  ];
+
+  return rewards
+    .filter((r) => r.val > 0) // 只留下有收益的
+    .map((r) => {
+      // 優化顯示邏輯：
+      // 最小顯示單位： 0.1 以下都顯示 0.1
+      const ceiledVal = Math.ceil(r.val * 10) / 10;
+
+      return `${r.icon}${ceiledVal.toFixed(1)}`;
+    }) // 格式化：圖示 + 數值(小數點1位)
+    .join(" ");
 }
 
 function resort(k) {
@@ -290,5 +310,11 @@ function resort(k) {
   }
   updateUI();
 }
+
+window.updateUI = updateUI;
+window.updateTime = updateTime;
+window.toggleOption = toggleOption;
+window.applyPreset = applyPreset;
+window.resort = resort;
 
 init();

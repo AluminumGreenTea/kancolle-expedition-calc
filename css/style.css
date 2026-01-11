@@ -1,0 +1,242 @@
+:root {
+  --primary: #2c3e50;
+  --fuel: #27ae60;
+  --ammo: #d4ac0d;
+  --steel: #7f8c8d;
+  --bauxite: #e67e22;
+  --score: #8e44ad;
+  --bucket: #2980b9;
+  --bg-gray: #f4f7f6;
+  --devmat: #16a085;
+}
+
+body {
+  font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+  background: var(--bg-gray);
+  padding: 20px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.container {
+  max-width: 1400px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* 頂部推薦 */
+.recommend-box {
+  background: linear-gradient(135deg, #2c3e50, #4ca1af);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.rec-title {
+  font-size: 1.3em;
+  font-weight: bold;
+  border-left: 5px solid #f39c12;
+  padding-left: 15px;
+}
+.rec-cards {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  margin: 0 20px;
+}
+.rec-card {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px;
+  border-radius: 8px;
+  flex: 1;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.rec-total {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* 時間滑桿 */
+.time-box {
+  background: #fff;
+  border: 3px solid var(--primary);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.time-display {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.main-slider {
+  width: 90%;
+  height: 15px;
+  cursor: pointer;
+}
+
+/* 工具列 */
+.tool-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.search-box {
+  flex: 2;
+  min-width: 200px;
+  padding: 12px;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  font-size: 1.1em;
+}
+
+.btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: 0.2s;
+  font-size: 13px;
+  background: #7f8c8d;
+}
+.btn-toggle.active {
+  background: #e74c3c;
+  border: 1px solid #000;
+}
+.btn-gs.active {
+  background: #f39c12;
+  border: 1px solid #000;
+}
+.btn-mon.active {
+  background: #9b59b6;
+  border: 1px solid #000;
+}
+
+/* 權重面板 */
+.control-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+.-titlesection {
+  grid-column: 1 / -1;
+  font-weight: bold;
+  color: var(--primary);
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+.weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.weight-item label {
+  font-size: 0.85em;
+  font-weight: bold;
+}
+.weight-item input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 表格樣式 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  background: var(--primary);
+  color: white;
+  padding: 12px;
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  cursor: pointer;
+}
+td {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+tr:hover {
+  background-color: #f1f7ff;
+}
+tr.disabled {
+  opacity: 0.3;
+  filter: grayscale(0.8);
+  background: #f9f9f9;
+}
+
+/* TAG */
+.area-tag {
+  font-size: 10px;
+  color: #7f8c8d;
+  display: block;
+  margin-top: 2px;
+}
+.badge {
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  color: white;
+  margin-right: 3px;
+  display: inline-block;
+  font-weight: bold;
+}
+.tag-bucket {
+  background: var(--bucket);
+}
+.tag-fuel {
+  background: var(--fuel);
+}
+.tag-ammo {
+  background: var(--ammo);
+}
+.tag-steel {
+  background: var(--steel);
+}
+.tag-bauxite {
+  background: var(--bauxite);
+}
+.tag-monthly {
+  background: #8e44ad;
+}
+.tag-combat {
+  background: #e74c3c;
+}
+
+.res-val {
+  font-weight: bold;
+}
+.score-col {
+  background: #fdfaff;
+  font-weight: bold;
+  color: var(--score);
+}

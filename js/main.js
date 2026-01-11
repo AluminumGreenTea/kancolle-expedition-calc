@@ -45,18 +45,25 @@ function getTagClass(tag) {
 function init() {
   const panel = document.getElementById("weightPanel");
 
+  // 讀取舊設定
+  const savedWeights = JSON.parse(localStorage.getItem("expWeightConfig"));
+
   panel.innerHTML = `<div class="section-title">⚖️ 收益權重設定</div> 
                         <div class="control-panel">
-    ${weightConfigs
-      .map(
-        (c) => `
+   ${weightConfigs
+     .map((c) => {
+       const currentVal = savedWeights
+         ? savedWeights[c.id.replace("w_", "")]
+         : c.val;
+       return `
         <div class="weight-item">            
             <label>${c.label}</label>
-            <input type="number" id="${c.id}" value="${c.val}" oninput="updateUI()">
+            <input type="number" id="${c.id}" value="${currentVal}" oninput="updateUI()">
         </div>
-    `
-      )
-      .join("")}`;
+      `;
+     })
+     .join("")}`;
+
   updateUI();
 }
 
@@ -149,7 +156,7 @@ function updateUI() {
         yFuel: exp.fuel * gsMult * daihatsu * hFactor,
         yAmmo: exp.ammo * gsMult * daihatsu * hFactor,
         ySteel: exp.steel * gsMult * daihatsu * hFactor,
-        yBaux: exp.bauxite * gsMult * daihatsu * hFactor,
+        yBauxite: exp.bauxite * gsMult * daihatsu * hFactor,
 
         //副產物獲取量 * 副產物大成功加成 * 時間間格
         yBucket: (exp.bucket || 0) * prob * hFactor,
@@ -199,6 +206,9 @@ function updateUI() {
     .slice(0, 3);
   renderDashboard(recs);
   renderTable(rows);
+
+  // 本地儲存
+  localStorage.setItem("expWeightConfig", JSON.stringify(w));
 }
 
 function renderDashboard(recs) {
@@ -219,12 +229,27 @@ function renderDashboard(recs) {
   const sum = (key) => recs.reduce((s, r) => s + r[key], 0);
 
   statsEl.innerHTML = `
-    <b>預估總時收：</b><br>
-    ⛽ ${fmt(sum("yFuel"), "res")} | 💣 ${fmt(sum("yAmmo"), "res")} | 
-    🏗️ ${fmt(sum("ySteel"), "res")} | ✈️ ${fmt(sum("yBaux"), "res")} <br>
-    💧 ${fmt(sum("yBucket"))} | 🔨 ${fmt(sum("yScrew"))} | 
-    🔫 ${fmt(sum("yTorch"))} | 🛠️ ${fmt(sum("yDev"))} | 
-    📦 ${fmt(sum("yBoxS") + sum("yBoxM") + sum("yBoxL"))}`;
+    <div class="dashboard-wrapper">
+      <div class="dashboard-title">預估時收</div>
+      
+      <div class="stats-row main-res">
+        <div class="stat-box">⛽ 燃料 ${fmt(sum("yFuel"), "res")}</div>
+        <div class="stat-box">💣 彈藥 ${fmt(sum("yAmmo"), "res")}</div>
+        <div class="stat-box">🏗️ 鋼材 ${fmt(sum("ySteel"), "res")}</div>
+        <div class="stat-box">✈️ 鋁土 ${fmt(sum("yBauxite"), "res")}</div>
+      </div>
+
+      <div class="stats-row sub-res">
+        <span class="cap">💧 水桶 ${fmt(sum("yBucket"))}</span>
+        <span class="cap">🔨 螺絲 ${fmt(sum("yScrew"))}</span>
+        <span class="cap">🔫 火槍 ${fmt(sum("yTorch"))}</span>
+        <span class="cap">🛠️ 開發 ${fmt(sum("yDev"))}</span>
+        <span class="cap">📦 家具箱 ${fmt(
+          sum("yBoxS") + sum("yBoxM") + sum("yBoxL")
+        )}</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderTable(rows) {
@@ -264,7 +289,7 @@ function renderTable(rows) {
       <td style="color:var(--fuel)">${fmt(exp.yFuel, "res")}</td>
       <td style="color:var(--ammo)">${fmt(exp.yAmmo, "res")}</td>
       <td style="color:var(--steel)">${fmt(exp.ySteel, "res")}</td>
-      <td style="color:var(--bauxite)">${fmt(exp.yBaux, "res")}</td>
+      <td style="color:var(--bauxite)">${fmt(exp.yBauxite, "res")}</td>
       <td style="font-size:12px; text-align:left">${renderExtraRewards(
         exp
       )}</td>

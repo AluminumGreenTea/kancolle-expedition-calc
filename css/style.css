@@ -40,7 +40,6 @@ body {
   gap: 20px;
   flex-wrap: wrap;
 }
-
 .rec-title {
   font-size: 1.3em;
   font-weight: bold;
@@ -62,11 +61,10 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 .rec-total {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  line-height: 1.6;
+  background: transparent;
+  padding: 0;
+  flex: 2;
+  min-width: 300px;
 }
 
 /* 時間滑桿 */
@@ -84,10 +82,29 @@ body {
   color: var(--primary);
   margin-bottom: 10px;
 }
+
 .main-slider {
+  -webkit-appearance: none;
   width: 90%;
-  height: 15px;
+  height: 8px;
+  background: rgba(44, 62, 80, 0.2);
+  border-radius: 5px;
+  outline: none;
+  margin: 20px 0;
+}
+.main-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  border: 3px solid #f39c12;
+  border-radius: 50%;
   cursor: pointer;
+  transition: 0.2s;
+}
+.main-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
 }
 
 /* 工具列 */
@@ -98,6 +115,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
 }
+
 .search-box {
   flex: 2;
   min-width: 200px;
@@ -170,6 +188,14 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
 th {
   background: var(--primary);
   color: white;
@@ -192,6 +218,11 @@ tr.disabled {
   opacity: 0.3;
   filter: grayscale(0.8);
   background: #f9f9f9;
+}
+th::after {
+  content: " ↕";
+  font-size: 0.8em;
+  opacity: 0.5;
 }
 
 /* TAG */
@@ -239,4 +270,49 @@ tr.disabled {
   background: #fdfaff;
   font-weight: bold;
   color: var(--score);
+}
+
+/* 容器包裝 */
+.dashboard-wrapper {
+  background: rgba(0, 0, 0, 0.25); /* 改用半透明 */
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 讓每一行都能橫向排列，超過寬度才換行 */
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* 主要資源方塊 */
+.stat-box {
+  flex: 1; /* 平分寬度 */
+  min-width: 70px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: #fff;
+  border-bottom: 2px solid #2980b9;
+}
+
+/* 副產物膠囊 */
+.cap {
+  background: rgba(44, 62, 80, 0.8);
+  border-radius: 20px; /* 圓角膠囊感 */
+  padding: 2px 10px;
+  font-size: 12px;
+  color: #bdc3c7;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-res {
+  justify-content: center;
+  margin-top: 5px;
 }
